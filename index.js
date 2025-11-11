@@ -2,13 +2,39 @@ const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const cors = require("cors");
+const admin = require("firebase-admin");
+
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// assignment10ServerBd
-// BXfmEYGRJDaa7k84
+const serviceAccount = require("./onlinelearingplatform-firebae-admindex.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const firebaeVerefyToken = async (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res.status(401).send({ message: "unauthorization access" });
+  }
+  const token = authorization.split(" ")[1];
+
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+    console.log("console.log form firebaseVarifi Token", decoded);
+
+    req.token_email = decoded.email;
+    next();
+  } catch (err) {
+    return res.status(401).send({ message: "unauthorization access" });
+  }
+
+  // next();
+};
+
 const uri = `mongodb+srv://${process.env.BD_USER}:${process.env.BD_PSS}@cluster0.0pttuht.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -24,8 +50,16 @@ async function run() {
     await client.connect();
 
     const DB = client.db("our_courses");
-    const featuredCourses = DB.collection("FeaturedCourses");
+
     const allCouressCallacaion = DB.collection("all_courses");
+    const myEnrullCallacrion = DB.collection("Enroll_courses");
+
+    app.post("/myEnroll_courses", firebaeVerefyToken, async (req, res) => {
+      console.log("my heardest ", req.headers);
+      const newEnroll = req.body;
+      const result = await myEnrullCallacrion.insertOne(newEnroll);
+      res.send(result);
+    });
 
     // find all coursess
     app.get("/all_courses", async (req, res) => {
@@ -43,18 +77,13 @@ async function run() {
     });
 
     // find feauturedCourses
-    app.get("/all_courses", async (req, res) => {
-      const cursor = featuredCourses.find().sort().limit(6);
+    app.get("/featuredCourses", async (req, res) => {
+      const cursor = allCouressCallacaion.find().sort().limit(6);
       const result = await cursor.toArray();
       res.send(result);
     });
 
-    // post featuredCourses
-    app.post("/featuredCourses", async (req, res) => {
-      const newCoreses = req.body;
-      const result = await featuredCourses.insertOne(newCoreses);
-      res.send(result);
-    });
+    // myenroll Courses
 
     await client.db("admin").command({ ping: 1 });
     console.log(
