@@ -1,5 +1,6 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+require("dotenv").config();
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 3000;
@@ -8,8 +9,7 @@ app.use(express.json());
 
 // assignment10ServerBd
 // BXfmEYGRJDaa7k84
-const uri =
-  "mongodb+srv://assignment10ServerBd:BXfmEYGRJDaa7k84@cluster0.0pttuht.mongodb.net/?appName=Cluster0";
+const uri = `mongodb+srv://${process.env.BD_USER}:${process.env.BD_PSS}@cluster0.0pttuht.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -34,8 +34,16 @@ async function run() {
       res.send(result);
     });
 
+    // find single courses
+    app.get("/all_courses/:id", async (req, res) => {
+      const id = req.params.id;
+      const quary = { _id: new ObjectId(id) };
+      const result = await allCouressCallacaion.findOne(quary);
+      res.send(result);
+    });
+
     // find feauturedCourses
-    app.get("/featuredCourses", async (req, res) => {
+    app.get("/all_courses", async (req, res) => {
       const cursor = featuredCourses.find().sort().limit(6);
       const result = await cursor.toArray();
       res.send(result);
