@@ -68,7 +68,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/myEnroll_courses", firebaeVerefyToken, async (req, res) => {
+    app.post("/myEnroll_courses",  async (req, res) => {
       console.log("my heardest ", req.headers);
       const newEnroll = req.body;
       const result = await myEnrullCallacrion.insertOne(newEnroll);
@@ -76,8 +76,20 @@ async function run() {
     });
 
     // find all coursess
+    // app.get("/all_courses", async (req, res) => {
+    //   const cursor = allCouressCallacaion.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
     app.get("/all_courses", async (req, res) => {
-      const cursor = allCouressCallacaion.find();
+      const email = req.query.email;
+      const query = {};
+
+      if (email) {
+        query.email = email;
+      }
+
+      const cursor = allCouressCallacaion.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
