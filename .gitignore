@@ -1,3 +1,4 @@
 node_modules
 .env
 onlinelearingplatform-firebae-admindex.json
+.vercel

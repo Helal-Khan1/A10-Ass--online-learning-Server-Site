@@ -9,7 +9,13 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const serviceAccount = require("./onlinelearingplatform-firebae-admindex.json");
+// index.js
+const decoded = Buffer.from(
+  process.env.FIREBASE_SERVICE_KEY,
+  "base64"
+).toString("utf8");
+const serviceAccount = JSON.parse(decoded);
+const { Ruleset } = require("firebase-admin/security-rules");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -54,6 +60,14 @@ async function run() {
     const allCouressCallacaion = DB.collection("all_courses");
     const myEnrullCallacrion = DB.collection("Enroll_courses");
 
+    //  find All Entol courses
+
+    app.get("/myEnroll_courses", async (req, res) => {
+      const coursor = myEnrullCallacrion.find();
+      const result = await coursor.toArray();
+      res.send(result);
+    });
+
     app.post("/myEnroll_courses", firebaeVerefyToken, async (req, res) => {
       console.log("my heardest ", req.headers);
       const newEnroll = req.body;
@@ -76,7 +90,7 @@ async function run() {
       res.send(result);
     });
 
-    // find feauturedCourses
+    // find for 6  feauturedCourses Home section
     app.get("/featuredCourses", async (req, res) => {
       const cursor = allCouressCallacaion.find().sort().limit(6);
       const result = await cursor.toArray();
@@ -84,6 +98,12 @@ async function run() {
     });
 
     // myenroll Courses
+
+    app.post("/all_courses", async (req, res) => {
+      const newCours = req.body;
+      const result = await allCouressCallacaion.insertOne(newCours);
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
