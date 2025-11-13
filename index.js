@@ -63,13 +63,19 @@ async function run() {
     //  find All Entol courses
 
     app.get("/myEnroll_courses", async (req, res) => {
-      const coursor = myEnrullCallacrion.find();
-      const result = await coursor.toArray();
+      const email = req.query.email;
+      const query = {};
+
+      if (email) query.email = email;
+
+      console.log("Query for enroll courses:", query);
+
+      const cursor = myEnrullCallacrion.find(query);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
-    app.post("/myEnroll_courses",  async (req, res) => {
-      console.log("my heardest ", req.headers);
+    app.post("/myEnroll_courses", async (req, res) => {
       const newEnroll = req.body;
       const result = await myEnrullCallacrion.insertOne(newEnroll);
       res.send(result);
@@ -106,6 +112,45 @@ async function run() {
     app.get("/featuredCourses", async (req, res) => {
       const cursor = allCouressCallacaion.find().sort().limit(6);
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //  allcours update
+    app.patch("/all_courses/:id", async (req, res) => {
+      try {
+        const { ObjectId } = require("mongodb");
+
+        const id = req.params.id;
+        const updateCourse = req.body;
+
+        console.log("🟢 Received update request:", updateCourse);
+
+        const query = { _id: new ObjectId(id) };
+        const update = {
+          $set: {
+            title: updateCourse.title,
+            category: updateCourse.category,
+            price: updateCourse.price,
+            duration: updateCourse.duration,
+            more_description: updateCourse.description,
+            image_url: updateCourse.photo,
+          },
+        };
+
+        const result = await allCoursesCollection.updateOne(query, update);
+        console.log("✅ Update result:", result);
+        res.send(result);
+      } catch (error) {
+        console.error("❌ Update Error:", error);
+        res.status(500).send({ error: error.message });
+      }
+    });
+
+    //  single corses delate
+    app.delete("/all_courses/:id", async (req, res) => {
+      const delateCours = req.params.id;
+      const quary = { _id: new ObjectId(delateCours) };
+      const result = await allCouressCallacaion.deleteOne(quary);
       res.send(result);
     });
 
