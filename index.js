@@ -77,6 +77,7 @@ async function run() {
 
     app.post("/myEnroll_courses", async (req, res) => {
       const newEnroll = req.body;
+      console.log(newEnroll);
       const result = await myEnrullCallacrion.insertOne(newEnroll);
       res.send(result);
     });
@@ -137,7 +138,7 @@ async function run() {
           },
         };
 
-        const result = await allCoursesCollection.updateOne(query, update);
+        const result = await allCouressCallacaion.updateOne(query, update);
         console.log("✅ Update result:", result);
         res.send(result);
       } catch (error) {
